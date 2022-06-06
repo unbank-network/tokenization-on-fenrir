@@ -1,0 +1,58 @@
+{
+  "vaiVault": {
+    "321": "0x27EC177cC0932c6e23A791b901fAb58C504ea784",
+    "97": "0x7Db4f5cC3bBA3e12FF1F528D2e3417afb0a57118"
+  },
+  "fWbnbFnrLp": {
+    "321": "0x1c8F36866691C7f25D14577cfE8c76BFb715Ee8A",
+    "97": ""
+  },
+  "xvsStore": {
+    "321": "",
+    "97": "0x081De61d3223A92C1aE34c0d8e7a0379391681A9"
+  },
+  "vaiUnitroller": {
+    "321": "",
+    "97": "0xf70C3C6b749BbAb89C081737334E74C9aFD4BE16"
+  },
+  "comptroller": {
+    "321": "0x56b4B49f31517be8DacC2ED471BCc20508A0e29D",
+    "97": "0x94d1820b2D1c7c7452A163983Dc888CEC546b77D"
+  },
+  "oracle": {
+    "321": "0xfFD6377A08a7dC376f9Af407B485Fa8Af713d0BC",
+    "97": "0x570FcC5e7E92066225e0dCAF64932A964Ecf3600"
+  },
+  "governorBravoDelegator": {
+    "321": "",
+    "97": "0x5573422A1a59385C247ec3a66B93B7C08eC2f8f2"
+  },
+  "venusLens": {
+    "321": "0x243415ce19991095b2105ba50d4cBa3D1de32695",
+    "97": "0x40e42Ad74AA4c61B577387821e845a8892E65002"
+  },
+  "xvsVault": {
+    "321": "",
+    "97": "0xa4Fd54cACdA379FB7CaA783B83Cc846f8ac0Faa6"
+  },
+  "xvsVaultProxy": {
+    "321": "0xA919C7eDeAb294DD15939c443BCacA1FA1a1850f",
+    "97": "0x9aB56bAD2D7631B2A857ccf36d998232A8b82280"
+  },
+  "xvsVaultStore": {
+    "321": "0x1e25CF968f12850003Db17E0Dba32108509C4359",
+    "97": "0x7B4dba3b320E7D421A213e1a73bB9858bb6839F8"
+  },
+  "xvsVestingProxy": {
+    "321": "0xb28Dec7C7Ac80f4D0B6a1B711c39e444cDE8B2cE",
+    "97": "0xcfa3a6bc934EcA22fa39e854c823cD3dE79D9BC8"
+  },
+  "vrtConverterProxy": {
+    "321": "0x92572fB60f4874d37917C53599cAe5b085B9Facd",
+    "97": "0xAb81e79F9607eC4C7b69Ab4f7cf6c0AF607aA131"
+  },
+  "vrtVaultProxy": {
+    "321": "0x98bF4786D72AAEF6c714425126Dd92f149e3F334",
+    "97": "0x1ffD1b8B67A1AE0C189c734B0F58B0954522FF71"
+  }
+}
