@@ -117,11 +117,13 @@ function BorrowTab({ asset, changeTab, onCancel, setSetting }: Props & DispatchP
    */
   const handleMaxAmount = () => {
     const tokenPrice = getBigNumber(asset.tokenPrice);
+    let assetLiquidity = getBigNumber(asset.liquidity);
+    assetLiquidity = (assetLiquidity).minus(0.001);
     const safeMax = BigNumber.maximum(
-      userTotalBorrowLimit.times(40).div(100).minus(userTotalBorrowBalance),
+      userTotalBorrowLimit.times(90).div(100).minus(userTotalBorrowBalance),
       new BigNumber(0),
     );
-    setAmount(BigNumber.minimum(safeMax, asset.liquidity).div(tokenPrice));
+    setAmount(BigNumber.minimum(safeMax, assetLiquidity).div(tokenPrice));
   };
 
   return (
