@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 
 import { TokenId, VTokenId } from 'types';
-import { useWeb3 } from 'clients/web3';
+import { getWeb3NoAccount, useWeb3 } from 'clients/web3';
+import Web3 from 'web3';
 import {
   getComptrollerContract,
   getInterestModelContract,
@@ -19,6 +20,8 @@ import {
   getXvsVestingProxyContract,
   getVrtVaultProxyContract,
   getFBepWbnbFnrContract,
+  getNewComptrollerContract,
+  getWeb3Contract,
 } from './getters';
 
 export const useTokenContract = <T extends TokenId>(name: T) => {
@@ -100,4 +103,21 @@ export const useVrtVaultProxyContract = () => {
 export const useFBepWbnbFnrContract = () => {
   const web3 = useWeb3();
   return useMemo(() => getFBepWbnbFnrContract(web3), [web3]);
+};
+
+//
+
+export const useNewComptrollerContract = (address: string) => {
+  const web3 = useWeb3();
+  return useMemo(() => getNewComptrollerContract(address, web3), [web3]);
+};
+
+export const getContractDirectly = <T>(abi: any, address: string, web3Instance: Web3) => {
+  const web3 = web3Instance ?? getWeb3NoAccount();
+  return new web3.eth.Contract(abi, address) as unknown as T;
+};
+
+export const useWeb3Contract = (address: string) => {
+  const web3 = useWeb3();
+  return useMemo(() => getWeb3Contract(web3, address), [web3, address]);
 };

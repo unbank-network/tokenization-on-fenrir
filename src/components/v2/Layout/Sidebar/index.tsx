@@ -118,7 +118,6 @@ export const SidebarUi: React.FC<ISidebarProps> = () => {
                     <ListItemIcon css={styles.listItemIcon}>
                       <Icon name={icon} />
                     </ListItemIcon>
-
                     <Typography
                       variant="body2"
                       component="span"
@@ -127,7 +126,6 @@ export const SidebarUi: React.FC<ISidebarProps> = () => {
                       {t(i18nKey)}
                     </Typography>
                   </div>
-
                   <Icon name="arrowRight" css={styles.mobileArrow} />
                 </Link>
               </ListItemButton>

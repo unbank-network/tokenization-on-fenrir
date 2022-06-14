@@ -29,6 +29,8 @@ import { RefreshContextProvider } from 'context/RefreshContext';
 import { MarketContextProvider } from 'context/MarketContext';
 // import { VaiContextProvider } from 'context/VaiContext';
 import { MuiThemeProvider } from 'theme/MuiThemeProvider/MuiThemeProvider';
+import { ChakraProvider } from '@chakra-ui/react';
+import AdminPage from 'containers/Main/AdminPage';
 import 'assets/styles/App.scss';
 
 initTranslationLibrary();
@@ -39,42 +41,45 @@ const App = () => (
       <QueryClientProvider client={queryClient}>
         <Provider store={store}>
           <RefreshContextProvider>
-            <MarketContextProvider>
-              <MuiThemeProvider>
-                <AuthProvider>
-                  <BrowserRouter>
-                    <ToastContainer
-                      autoClose={8000}
-                      transition={Slide}
-                      hideProgressBar
-                      newestOnTop
-                      position={toast.POSITION.TOP_LEFT}
-                    />
-                    <Layout>
-                      <Switch>
-                        <Route
-                          exact
-                          path="/dashboard"
-                          component={process.env.REACT_APP_RUN_V2 ? Dashboard : DashboardV1}
-                        />
-                        <Route exact path="/fnr" component={Vote} />
-                        {/* <Route exact path="/fnr" component={FNR} /> */}
-                        <Route exact path="/market" component={Market} />
-                        {/* <Route exact path="/transaction" component={Transaction} /> */}
-                        {/* <Route exact path="/vault" component={Vault} /> */}
-                        {/* <Route exact path="/market/:asset" component={MarketDetail} /> */}
-                        {/* <Route exact path="/vote/leaderboard" component={VoterLeaderboard} /> */}
-                        {/* <Route exact path="/vote/proposal/:id" component={VoteOverview} /> */}
-                        {/* <Route exact path="/vote/address/:address" component={ProposerDetail} /> */}
-                        {/* <Route exact path="/convert-vrt" component={VrtConversion} /> */}
-                        {/* {isOnTestnet && <Route exact path="/faucet" component={Faucet} />} */}
-                        <Redirect from="/" to="/dashboard" />
-                      </Switch>
-                    </Layout>
-                  </BrowserRouter>
-                </AuthProvider>
-              </MuiThemeProvider>
-            </MarketContextProvider>
+            <ChakraProvider>
+              <MarketContextProvider>
+                <MuiThemeProvider>
+                  <AuthProvider>
+                    <BrowserRouter>
+                      <ToastContainer
+                        autoClose={8000}
+                        transition={Slide}
+                        hideProgressBar
+                        newestOnTop
+                        position={toast.POSITION.TOP_LEFT}
+                      />
+                      <Layout>
+                        <Switch>
+                          <Route
+                            exact
+                            path="/dashboard"
+                            component={process.env.REACT_APP_RUN_V2 ? Dashboard : DashboardV1}
+                          />
+                          <Route exact path="/fnr" component={Vote} />
+                          {/* <Route exact path="/fnr" component={FNR} /> */}
+                          <Route exact path="/market" component={Market} />
+                          <Route exact path="/admin" component={AdminPage} />
+                          {/* <Route exact path="/transaction" component={Transaction} /> */}
+                          {/* <Route exact path="/vault" component={Vault} /> */}
+                          {/* <Route exact path="/market/:asset" component={MarketDetail} /> */}
+                          {/* <Route exact path="/vote/leaderboard" component={VoterLeaderboard} /> */}
+                          {/* <Route exact path="/vote/proposal/:id" component={VoteOverview} /> */}
+                          {/* <Route exact path="/vote/address/:address" component={ProposerDetail} /> */}
+                          {/* <Route exact path="/convert-vrt" component={VrtConversion} /> */}
+                          {/* {isOnTestnet && <Route exact path="/faucet" component={Faucet} />} */}
+                          <Redirect from="/" to="/dashboard" />
+                        </Switch>
+                      </Layout>
+                    </BrowserRouter>
+                  </AuthProvider>
+                </MuiThemeProvider>
+              </MarketContextProvider>
+            </ChakraProvider>
           </RefreshContextProvider>
         </Provider>
       </QueryClientProvider>

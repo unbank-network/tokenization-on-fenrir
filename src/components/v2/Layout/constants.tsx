@@ -34,6 +34,11 @@ export const menuItems: IMenuItem[] = [
     i18nKey: 'layout.menuItems.fnr',
     icon: 'fnr',
   },
+  {
+    href: '/admin',
+    i18nKey: 'layout.menuItems.dashboard',
+    icon: 'dashboard',
+  },
   // {
   //   href: '/vault',
   //   // Translation key: do not remove this comment
