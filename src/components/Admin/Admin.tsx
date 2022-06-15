@@ -284,7 +284,7 @@ const Admin = () => {
     try {
       underlyingTokenAddress = await theCTokenContract.methods.underlying().call();
     } catch (error) {
-      console.log('zz theCTokenContract underlying error', error);
+      console.log('theCTokenContract underlying error', error);
     }
     // const myIVTDemo = IVTDemoABI;
     const tokenContract: any = getContractDirectly(IVTDemoABI.abi, underlyingTokenAddress, web3);
@@ -389,11 +389,9 @@ const Admin = () => {
         // this.cdr.markForCheck();
         //
         // this.initToken(token);
-        // console.log('xx zz token', token);
         myTokenData.push(token);
       }
     }
-    // console.log('xx zz myTokenData', myTokenData);
     setTokenData(myTokenData);
   };
 
@@ -423,8 +421,9 @@ const Admin = () => {
     const cTokenContract: any = getContractDirectly(CErc20Delegator.abi, cTokenAddress, web3);
     // this.estimateGasPrice();
     try {
+      const address = account ?? '';
       /* eslint no-underscore-dangle: 0 */
-      const tx: any = await cTokenContract.methods._reduceReserves(amt).call();
+      const tx: any = await cTokenContract.methods._reduceReserves(amt).send({ from: address });
       // await web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
@@ -440,29 +439,31 @@ const Admin = () => {
   }, []);
 
   const updateIrModel = async () => {
-    if (typeof updateIr.tokenAddress === 'undefined') {
+    if (updateIr.tokenAddress) {
+      // this.estimateGasPrice();
+      try {
+        const TokenContract: any = getContractDirectly(
+          CErc20Delegator.abi,
+          updateIr.tokenAddress,
+          web3,
+        );
+        const address = account ?? '';
+        const tx = await TokenContract.methods
+          ._setInterestRateModel(updateIr.irAddress)
+          .send({ from: address });
+        // const await ethers.providers.waitForTransaction(tx.hash);
+
+        // Waiting for txn
+        const myWeb3 = new ethers.providers.Web3Provider(window.ethereum);
+        await myWeb3.waitForTransaction(tx.hash);
+      } catch (error) {
+        // window.location.reload();
+        console.error(error);
+      }
+      setUpdateIr({});
+    } else {
       return undefined;
     }
-    // this.estimateGasPrice();
-    try {
-      const TokenContract: any = getContractDirectly(
-        CErc20Delegator.abi,
-        updateIr.tokenAddress,
-        web3,
-      );
-
-      const tx = await TokenContract.methods._setInterestRateModel(updateIr.irAddress).call();
-      // const await ethers.providers.waitForTransaction(tx.hash);
-
-      // Waiting for txn
-      const myWeb3 = new ethers.providers.Web3Provider(window.ethereum);
-      await myWeb3.waitForTransaction(tx.hash);
-
-      // window.location.reload();
-    } catch (error) {
-      console.error(error);
-    }
-    setUpdateIr({});
     return true;
   };
 
@@ -482,20 +483,21 @@ const Admin = () => {
     // this.estimateGasPrice();
     try {
       const divBy = 10 ** 16;
+      const address = account ?? '';
       const colFacStr = (colFac * divBy).toString();
       const tx: any = await comptrollerContract.methods
         ._setCollateralFactor(cTkCollateralAddress, colFacStr)
-        .call();
+        .send({ from: address });
       // await this.web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
-
+      setCTkCollateralAddress('');
+      setCTokenRatio(null);
       // window.location.reload();
     } catch (error) {
       console.error(error);
     }
-    setCTkCollateralAddress('');
-    setCTokenRatio(null);
+
     return true;
   };
 
@@ -505,24 +507,37 @@ const Admin = () => {
     }
     try {
       const rewardsAmountStr = toBN(rewardsAmount).times(toBN(10).pow(18)).toFixed();
-      const tx = await comptrollerContract.methods._setCompRate(rewardsAmountStr).call();
+
+      const address = account ?? '';
+      const tx = await comptrollerContract.methods
+        ._setCompRate(rewardsAmountStr)
+        .send({ from: address });
       // await this.web3.waitForTransaction(tx.hash);
 
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
+      setRewardsAmount('');
     } catch (error) {
       console.error(error);
     }
-    setRewardsAmount('');
     return true;
   };
 
   const updateOracleCTPrice = async () => {
     const decimalDiff = contractAddresses.BasePriceDecimal;
-    if (typeof configDataObj.cTokenAddress === 'undefined') {
+    // if (typeof configDataObj.cTokenAddress === 'undefined') {
+    //   return undefined;
+    // }
+    // if (typeof configDataObj.price === 'undefined') {
+    //   return undefined;
+    // }
+    // if (parseFloat(configDataObj.price) < 0) {
+    //   return undefined;
+    // }
+    if (!configDataObj.cTokenAddress) {
       return undefined;
     }
-    if (typeof configDataObj.price === 'undefined') {
+    if (!configDataObj.price) {
       return undefined;
     }
     if (parseFloat(configDataObj.price) < 0) {
@@ -556,7 +571,6 @@ const Admin = () => {
         'Allowed price difference USD = ',
         priceUpdatePercentAllowedAmountUSD,
       );
-      setConfigDataObj({});
       return undefined;
     }
 
@@ -572,13 +586,15 @@ const Admin = () => {
       const underlyingSymbol = await TokenContract.methods.symbol().call();
       const oracleAddress = await comptrollerContract.methods.oracle().call();
       const priceOracle: any = getContractDirectly(UniswapOracleTWAP.abi, oracleAddress, web3);
+      const address = account ?? '';
       const tx = await priceOracle.methods
         ._setPrice(underlyingTokenAddress, underlyingSymbol, priceMantissa.toFixed(0))
-        .call();
+        .send({ from: address });
       setConfigDataObjLoader(true);
       // await this.web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
+      setConfigDataObj({});
       setConfigDataObjLoader(false);
       // window.location.reload();
     } catch (error) {
@@ -590,42 +606,43 @@ const Admin = () => {
   };
 
   const transReward = async () => {
-    console.log('z clicked!', transferRewAmt);
     if (transferRewAmt === undefined || transferRewAmt === null) {
       return undefined;
     }
-    console.log('z clicked!!', transferRewAmt);
     try {
       const transferRewAmtStr = toBN(transferRewAmt).times(toBN(10).pow(18)).toFixed();
-      console.log('z 1!!', transferRewAmtStr);
-
       const compAddress = await comptrollerContract.methods.getCompAddress().call();
-      console.log('z 2!!', compAddress);
-
       const compCont: any = getContractDirectly(CompCont.abi, compAddress, web3);
-      console.log('z 3!!', compCont);
-
+      const address = account ?? '';
       const tx = await compCont.methods
         .transfer(contractAddresses.Comptroller, transferRewAmtStr)
-        .call();
-      console.log('z 4!!', tx);
-
+        .send({ from: address });
       // await this.web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
+      setTransferRewAmt('');
+
       // window.location.reload();
     } catch (error) {
       console.error(error);
     }
-    setTransferRewAmt('');
     return true;
   };
 
   const updateCtokenReserveFactor = async () => {
-    if (typeof updateReserveFactor.cTokenAddress === 'undefined') {
+    // if (typeof updateReserveFactor.cTokenAddress === 'undefined') {
+    //   return undefined;
+    // }
+    // if (typeof updateReserveFactor.amount === 'undefined') {
+    //   return undefined;
+    // }
+    // if (parseFloat(updateReserveFactor.amount) < 0) {
+    //   return undefined;
+    // }
+    if (!updateReserveFactor.cTokenAddress) {
       return undefined;
     }
-    if (typeof updateReserveFactor.amount === 'undefined') {
+    if (!updateReserveFactor.amount) {
       return undefined;
     }
     if (parseFloat(updateReserveFactor.amount) < 0) {
@@ -639,20 +656,22 @@ const Admin = () => {
         web3,
       );
       const reserveFacMantissa = toBN(updateReserveFactor.amount).times(toBN(10).pow(18));
+
+      const address = account ?? '';
+
       const tx = await CTokenContract.methods
         ._setReserveFactor(toBN(reserveFacMantissa).toFixed())
-        .call();
+        .send({ from: address });
       setUpdateReserveFactorLoader(true);
       // await this.web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
-
+      setUpdateReserveFactor({});
       setUpdateReserveFactorLoader(false);
       // window.location.reload();
     } catch (error) {
       console.error(error);
     }
-    setUpdateReserveFactor({});
     return true;
   };
 
@@ -673,7 +692,7 @@ const Admin = () => {
 
       console.log(
         'Updating values IR',
-        updateIrParams.blocksPerYear,
+        // updateIrParams.blocksPerYear,
         baseRateWei,
         multiplierWei,
         jumpMultiplierWei,
@@ -688,28 +707,39 @@ const Admin = () => {
         updateIrParams.irAddress,
         web3,
       );
+      const address = account ?? '';
+
       const tx = await IrContract.methods
         .updateJumpRateModel(baseRateWei, multiplierWei, jumpMultiplierWei, kinkWei, overrides)
-        .call();
+        .send({ from: address });
       // await this.web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
+      setUpdateIrParams({});
       // window.location.reload();
     } catch (error) {
       console.error(error);
     }
-    setUpdateIrParams({});
     return true;
   };
 
   const updateCtokenSupplyAndBorrowRewardRate = async () => {
-    if (typeof updateCtokenRewardsRate.cTokenAddress === 'undefined') {
+    // if (typeof updateCtokenRewardsRate.cTokenAddress === 'undefined') {
+    //   return undefined;
+    // }
+    // if (typeof updateCtokenRewardsRate.supplySpeed === 'undefined') {
+    //   return undefined;
+    // }
+    // if (typeof updateCtokenRewardsRate.borrowSpeed === 'undefined') {
+    //   return undefined;
+    // }
+    if (!updateCtokenRewardsRate.cTokenAddress) {
       return undefined;
     }
-    if (typeof updateCtokenRewardsRate.supplySpeed === 'undefined') {
+    if (!updateCtokenRewardsRate.supplySpeed) {
       return undefined;
     }
-    if (typeof updateCtokenRewardsRate.borrowSpeed === 'undefined') {
+    if (!updateCtokenRewardsRate.borrowSpeed) {
       return undefined;
     }
     try {
@@ -720,28 +750,35 @@ const Admin = () => {
       const borrowSpeeds = [
         toBN(updateCtokenRewardsRate.borrowSpeed).times(toBN(10).pow(18)).toString(),
       ];
-      console.log(ctokens, supplySpeeds, borrowSpeeds);
+      const address = account ?? '';
       const tx = await comptrollerContract.methods
         ._setCompSpeeds(ctokens, supplySpeeds, borrowSpeeds)
-        .call();
+        .send({ from: address });
       setUpdateCtokenRewardsRateLoader(true);
       // await this.web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
+      setUpdateCtokenRewardsRate({});
       setUpdateCtokenRewardsRateLoader(false);
       // window.location.reload();
     } catch (error) {
       console.error(error);
     }
-    setUpdateCtokenRewardsRate({});
     return true;
   };
 
   const updateBorrowLimit = async () => {
-    if (typeof updateMarketBorrowLimit.cTokenAddress === 'undefined') {
+    // if (typeof updateMarketBorrowLimit.cTokenAddress === 'undefined') {
+    //   return undefined;
+    // }
+    // if (typeof updateMarketBorrowLimit.borrowLimit === 'undefined') {
+    //   return undefined;
+    // }
+
+    if (!updateMarketBorrowLimit.cTokenAddress) {
       return undefined;
     }
-    if (typeof updateMarketBorrowLimit.borrowLimit === 'undefined') {
+    if (!updateMarketBorrowLimit.borrowLimit) {
       return undefined;
     }
 
@@ -757,76 +794,97 @@ const Admin = () => {
           .times(toBN(10).pow(underlyingDecimals))
           .toString(),
       ];
-      console.log(ctokens, borrowLimit);
+
+      const address = account ?? '';
+
       const tx = await comptrollerContract.methods
         ._setMarketBorrowCaps(ctokens, borrowLimit)
-        .call();
+        .send({ from: address });
       setUpdateCtokenRewardsRateLoader(true);
       // await this.web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
+      setUpdateMarketBorrowLimit({});
       setUpdateCtokenRewardsRateLoader(false);
       // window.location.reload();
     } catch (error) {
       console.error(error);
     }
-    setUpdateMarketBorrowLimit({});
     return true;
   };
 
   const pauseUnpauseBorrow = async () => {
-    if (typeof updateMarketBorrowLimit.borrowPauseCToken === 'undefined') {
+    // if (typeof updateMarketBorrowLimit.borrowPauseCToken === 'undefined') {
+    //   return undefined;
+    // }
+    // if (typeof updateMarketBorrowLimit.borrowPauseState === 'undefined') {
+    //   return undefined;
+    // }
+    if (!updateMarketBorrowLimit.borrowPauseCToken) {
       return undefined;
     }
-    if (typeof updateMarketBorrowLimit.borrowPauseState === 'undefined') {
+    if (!updateMarketBorrowLimit.borrowPauseState) {
       return undefined;
     }
     try {
       const ctoken = updateMarketBorrowLimit.borrowPauseCToken;
       const state = updateMarketBorrowLimit.borrowPauseState;
       console.log('ctoken++++', ctoken, state);
-      const tx = await comptrollerContract.methods._setBorrowPaused(ctoken, state).call();
+
+      const address = account ?? '';
+
+      const tx = await comptrollerContract.methods
+        ._setBorrowPaused(ctoken, state)
+        .send({ from: address });
+
       setUpdateCtokenRewardsRateLoader(true);
       // await this.web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
+      setUpdateMarketBorrowLimit({});
       setUpdateCtokenRewardsRateLoader(false);
       // window.location.reload();
     } catch (error) {
       console.error(error);
     }
-    setUpdateMarketBorrowLimit({});
     return true;
   };
 
   const pauseUnpauseSupply = async () => {
-    if (typeof updateMarketBorrowLimit.supplyPauseCToken === 'undefined') {
+    // if (typeof updateMarketBorrowLimit.supplyPauseCToken === 'undefined') {
+    //   return undefined;
+    // }
+    // if (typeof updateMarketBorrowLimit.supplyPauseState === 'undefined') {
+    //   return undefined;
+    // }
+    if (!updateMarketBorrowLimit.supplyPauseCToken) {
       return undefined;
     }
-    if (typeof updateMarketBorrowLimit.supplyPauseState === 'undefined') {
+    if (!updateMarketBorrowLimit.supplyPauseState) {
       return undefined;
     }
     try {
       const ctoken = updateMarketBorrowLimit.supplyPauseCToken;
       const state = updateMarketBorrowLimit.supplyPauseState;
       console.log('ctoken++++', ctoken, state);
-      const tx = await comptrollerContract.methods._setMintPaused(ctoken, state).call();
+
+      const address = account ?? '';
+      const tx = await comptrollerContract.methods
+        ._setMintPaused(ctoken, state)
+        .send({ from: address });
+
       setUpdateCtokenRewardsRateLoader(true);
       // await this.web3.waitForTransaction(tx.hash);
       const myWeb3: any = new ethers.providers.Web3Provider(window.ethereum);
       await myWeb3.waitForTransaction(tx.hash);
+      setUpdateMarketBorrowLimit({});
       setUpdateCtokenRewardsRateLoader(false);
       // window.location.reload();
     } catch (error) {
       console.error(error);
     }
-    setUpdateMarketBorrowLimit({});
     return true;
   };
-
-  console.log('xx jumpIrData', jumpIrData);
-  console.log('xx tokenData', tokenData);
-  console.log('xx web3', web3);
 
   return (
     // <Card>
@@ -857,6 +915,7 @@ const Admin = () => {
                     fontWeight="bold"
                     h="36px"
                     onClick={() => {}}
+                    // isDisabled={!isUserAdmin}
                   >
                     Update All Market Prices
                   </Button>
@@ -1241,6 +1300,7 @@ const Admin = () => {
                   fontSize="18px"
                   justifySelf="center"
                   onClick={() => updateIrModel()}
+                  isDisabled={!isUserAdmin}
                 >
                   Submit
                 </Button>
@@ -1401,7 +1461,6 @@ const Admin = () => {
                 focusBorderColor="#d3d3d3"
                 borderRadius="5px"
                 onChange={e => {
-                  console.log('TYPED!!', e.target.value);
                   setTransferRewAmt(e.target.value);
                 }}
               />
@@ -1488,7 +1547,7 @@ const Admin = () => {
                   w="30%"
                   fontSize="18px"
                   justifySelf="center"
-                  // isDisabled={!isUserAdmin}
+                  isDisabled={!isUserAdmin}
                   onClick={() => updateOracleCTPrice()}
                 >
                   Submit
@@ -1685,6 +1744,7 @@ const Admin = () => {
                   fontSize="18px"
                   justifySelf="center"
                   onClick={() => updateIrModelParams()}
+                  isDisabled={!isUserAdmin}
                 >
                   Submit
                 </Button>
