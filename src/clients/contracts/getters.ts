@@ -22,8 +22,6 @@ import vrtConverterAbi from 'constants/contracts/abis/vrtConverter.json';
 // import vrtTokenAbi from 'constants/contracts/abis/vrtToken.json';
 import vrtVaultAbi from 'constants/contracts/abis/vrtVault.json';
 //
-import ComptrollerV3 from 'constants/contracts/contracts/ComptrollerV3.json';
-import ComptrollerNew from 'constants/contracts/contracts/Comptroller.json';
 //
 import {
   Bep20,
@@ -184,12 +182,12 @@ export const getFBepWbnbFnrContract = <T extends VTokenId>(web3: Web3): VTokenCo
 
 //
 
-export const getNewComptrollerContract = (address: string, web3: Web3) => {
-  const myComptroller: any = ComptrollerNew;
-  return getContract(myComptroller.abi, address, web3) as any; // unknown  as Comptroller;
-};
+// export const getNewComptrollerContract = (address: string, web3: Web3) => {
+//   const myComptroller: any = ComptrollerNew;
+//   return getContract(myComptroller.abi, address, web3) as any; // unknown  as Comptroller;
+// };
 
-export const getWeb3Contract = (web3: Web3, address: string) => {
-  const myComptrollerV3: any = ComptrollerV3;
-  return getContract(myComptrollerV3.abi as AbiItem[], address, web3) as unknown as any;
-};
+// export const getWeb3Contract = (web3: Web3, address: string) => {
+//   const myComptrollerV3: any = ComptrollerV3;
+//   return getContract(myComptrollerV3.abi as AbiItem[], address, web3) as unknown as any;
+// };

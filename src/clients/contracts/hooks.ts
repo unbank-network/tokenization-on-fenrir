@@ -20,8 +20,6 @@ import {
   getXvsVestingProxyContract,
   getVrtVaultProxyContract,
   getFBepWbnbFnrContract,
-  getNewComptrollerContract,
-  getWeb3Contract,
 } from './getters';
 
 export const useTokenContract = <T extends TokenId>(name: T) => {
@@ -107,17 +105,17 @@ export const useFBepWbnbFnrContract = () => {
 
 //
 
-export const useNewComptrollerContract = (address: string) => {
-  const web3 = useWeb3();
-  return useMemo(() => getNewComptrollerContract(address, web3), [web3]);
-};
+// export const useNewComptrollerContract = (address: string) => {
+//   const web3 = useWeb3();
+//   return useMemo(() => getNewComptrollerContract(address, web3), [web3]);
+// };
 
-export const getContractDirectly = <T>(abi: any, address: string, web3Instance: Web3) => {
+export const useContractDirectly = <T>(abi: any, address: string, web3Instance: Web3) => {
   const web3 = web3Instance ?? getWeb3NoAccount();
   return new web3.eth.Contract(abi, address) as unknown as T;
 };
 
-export const useWeb3Contract = (address: string) => {
-  const web3 = useWeb3();
-  return useMemo(() => getWeb3Contract(web3, address), [web3, address]);
-};
+// export const useWeb3Contract = (address: string) => {
+//   const web3 = useWeb3();
+//   return useMemo(() => getWeb3Contract(web3, address), [web3, address]);
+// };

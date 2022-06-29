@@ -42,10 +42,12 @@ export const SidebarUi: React.FC<ISidebarProps> = () => {
       <Drawer variant="permanent" css={styles.drawer}>
         <div css={styles.drawerContent}>
           <Toolbar css={styles.toolbar}>
-            <LogoDesktop css={styles.logo} />
-            <LogoNoText css={styles.logoClosed} />
+            {/* <LogoDesktop css={styles.logo} />
+            <LogoNoText css={styles.logoClosed} /> */}
+            <div style={{ marginTop: '30%', marginLeft: '10%' }}>
+              <ConnectButton />
+            </div>
           </Toolbar>
-
           <List css={styles.list}>
             {menuItems.map(menuItem => (
               <ListItemButton
@@ -68,9 +70,6 @@ export const SidebarUi: React.FC<ISidebarProps> = () => {
               </ListItemButton>
             ))}
           </List>
-          <div style={{ marginTop: '100%', marginLeft: '10%' }}>
-            <ConnectButton />
-          </div>
         </div>
       </Drawer>
 
@@ -131,7 +130,6 @@ export const SidebarUi: React.FC<ISidebarProps> = () => {
               </ListItemButton>
             ))}
           </List>
-
           {/* <ClaimXvsRewardButton css={styles.claimXvsRewardButton} /> */}
         </Menu>
       </div>

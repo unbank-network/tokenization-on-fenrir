@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 // import Typography from '@mui/material/Typography';
 // import { Icon } from '../Icon';
 import Sidebar from './Sidebar';
-// import Header from './Header';
+import Header from './Header';
 import { PageContainer } from './PageContainer';
 import { useStyles } from './styles';
 

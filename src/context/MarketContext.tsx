@@ -88,195 +88,184 @@ const MarketContextProvider = ({ children }: $TSFixMe) => {
       }
 
       // try {
-        // let xvsBalance = new BigNumber(0);
-        const assetsIn = account
-          ? await comptrollerContract.methods.getAssetsIn(account).call()
-          : [];
+      // let xvsBalance = new BigNumber(0);
+      const assetsIn = account ? await comptrollerContract.methods.getAssetsIn(account).call() : [];
 
-        const vtAddresses = Object.values(VBEP_TOKENS)
-          .filter(item => item.address)
-          .map(item => item.address);
+      const vtAddresses = Object.values(VBEP_TOKENS)
+        .filter(item => item.address)
+        .map(item => item.address);
 
-        let balances = {};
-        if (account) {
-          balances = indexBy(
-            (item: $TSFixMe) => item.cToken.toLowerCase(), // index by vToken address
-            await lens.methods.cTokenBalancesAll(vtAddresses, account).call(),
-          );
-          // xvsBalance = getXvsBalance(balances);
+      let balances = {};
+      if (account) {
+        balances = indexBy(
+          (item: $TSFixMe) => item.cToken.toLowerCase(), // index by vToken address
+          await lens.methods.cTokenBalancesAll(vtAddresses, account).call(),
+        );
+        // xvsBalance = getXvsBalance(balances);
+      }
+
+      // Fetch treasury balances
+      // const treasuryBalances = indexBy(
+      //   (item: $TSFixMe) => item.vToken.toLowerCase(), // index by vToken address
+      //   await lens.methods.cTokenBalancesAll(vtAddresses, TREASURY_ADDRESS).call(),
+      // );
+
+      const marketsMap = indexBy((item: $TSFixMe) => item.underlyingSymbol.toLowerCase(), markets);
+
+      const assetAndNullList = Object.values(TOKENS).map((item, index) => {
+        const toDecimalAmount = (mantissa: string) =>
+          new BigNumber(mantissa).shiftedBy(-item.decimals);
+
+        // if no corresponding vassets, skip
+        if (!getVBepToken(item.id)) {
+          return null;
         }
 
-        // Fetch treasury balances
-        // const treasuryBalances = indexBy(
-        //   (item: $TSFixMe) => item.vToken.toLowerCase(), // index by vToken address
-        //   await lens.methods.cTokenBalancesAll(vtAddresses, TREASURY_ADDRESS).call(),
+        let market = marketsMap[item.symbol.toLowerCase()];
+        if (!market) {
+          market = {};
+        }
+
+        const vtokenAddress = getVBepToken(item.id).address.toLowerCase();
+
+        const collateral = assetsIn
+          .map((address: $TSFixMe) => address.toLowerCase())
+          .includes(vtokenAddress);
+
+        // const treasuryBalance = toDecimalAmount(
+        //   (treasuryBalances[vtokenAddress] as any).tokenBalance,
         // );
+        const treasuryBalance = toDecimalAmount('0');
 
-        const marketsMap = indexBy(
-          (item: $TSFixMe) => item.underlyingSymbol.toLowerCase(),
-          markets,
-        );
+        let walletBalance = new BigNumber(0);
+        let supplyBalance = new BigNumber(0);
+        let borrowBalance = new BigNumber(0);
+        let isEnabled = false;
+        const percentOfLimit = '0';
 
-        const assetAndNullList = Object.values(TOKENS).map((item, index) => {
-          const toDecimalAmount = (mantissa: string) =>
-            new BigNumber(mantissa).shiftedBy(-item.decimals);
+        if (account) {
+          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+          const wallet = balances[vtokenAddress];
 
-          // if no corresponding vassets, skip
-          if (!getVBepToken(item.id)) {
-            return null;
+          walletBalance = toDecimalAmount(wallet.tokenBalance);
+          supplyBalance = toDecimalAmount(wallet.balanceOfUnderlying);
+          borrowBalance = toDecimalAmount(wallet.borrowBalanceCurrent);
+          if (item.id === 'bnb') {
+            isEnabled = true;
+          } else {
+            isEnabled = toDecimalAmount(wallet.tokenAllowance).isGreaterThan(walletBalance);
           }
+        }
 
-          let market = marketsMap[item.symbol.toLowerCase()];
-          if (!market) {
-            market = {};
-          }
+        return {
+          key: index,
+          id: item.id,
+          img: item.asset,
+          vimg: item.vasset,
+          symbol: market.underlyingSymbol || '',
+          decimals: item.decimals,
+          tokenAddress: market.underlyingAddress,
+          vsymbol: market.symbol,
+          vtokenAddress,
+          supplyApy: new BigNumber(market.supplyApy || 0),
+          borrowApy: new BigNumber(market.borrowApy || 0),
+          xvsSupplyApy: new BigNumber(market.supplyVenusApy || 0),
+          xvsBorrowApy: new BigNumber(market.borrowVenusApy || 0),
+          collateralFactor: new BigNumber(market.collateralFactor || 0).div(1e18),
+          tokenPrice: new BigNumber(market.tokenPrice || 0),
+          liquidity: new BigNumber(market.liquidity || 0),
+          borrowCaps: new BigNumber(market.borrowCaps || 0),
+          totalBorrows: new BigNumber(market.totalBorrows2 || 0),
+          treasuryBalance,
+          walletBalance,
+          supplyBalance,
+          borrowBalance,
+          isEnabled,
+          collateral,
+          percentOfLimit,
+          hypotheticalLiquidity: ['0', '0', '0'] as [string, string, string],
+          borrowerPBFnr:
+            new BigNumber(market.borrowerPBFnr).div(new BigNumber(10).pow(18)) || new BigNumber(0),
+          supplierPBFnr:
+            new BigNumber(market.supplierPBFnr).div(new BigNumber(10).pow(18)) || new BigNumber(0),
+          borrowerPBFnrPerYear: new BigNumber(market.borrowerPBFnrPerYear) || new BigNumber(0),
+          supplierPBFnrPerYear: new BigNumber(market.supplierPBFnrPerYear) || new BigNumber(0),
+        };
+      });
 
-          const vtokenAddress = getVBepToken(item.id).address.toLowerCase();
+      let assetList = assetAndNullList.filter(notNull);
 
-          const collateral = assetsIn
-            .map((address: $TSFixMe) => address.toLowerCase())
-            .includes(vtokenAddress);
-
-          // const treasuryBalance = toDecimalAmount(
-          //   (treasuryBalances[vtokenAddress] as any).tokenBalance,
-          // );
-          const treasuryBalance = toDecimalAmount('0');
-
-          let walletBalance = new BigNumber(0);
-          let supplyBalance = new BigNumber(0);
-          let borrowBalance = new BigNumber(0);
-          let isEnabled = false;
-          const percentOfLimit = '0';
-
-          if (account) {
-            // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-            const wallet = balances[vtokenAddress];
-
-            walletBalance = toDecimalAmount(wallet.tokenBalance);
-            supplyBalance = toDecimalAmount(wallet.balanceOfUnderlying);
-            borrowBalance = toDecimalAmount(wallet.borrowBalanceCurrent);
-            if (item.id === 'bnb') {
-              isEnabled = true;
-            } else {
-              isEnabled = toDecimalAmount(wallet.tokenAllowance).isGreaterThan(walletBalance);
-            }
-          }
+      // We use "hypothetical liquidity upon exiting a market" to disable the "exit market"
+      // toggle. Sadly, the current VenusLens contract does not provide this info, so we
+      // still have to query each market.
+      assetList = await Promise.all(
+        assetList.map(async asset => {
+          const hypotheticalLiquidity: [string, string, string] = (
+            account
+              ? await comptrollerContract.methods
+                  .getHypotheticalAccountLiquidity(
+                    account,
+                    asset.vtokenAddress,
+                    // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+                    balances[asset.vtokenAddress.toLowerCase()].balanceOf,
+                    0,
+                  )
+                  .call()
+              : ['0', '0', '0']
+          ) as [string, string, string];
 
           return {
-            key: index,
-            id: item.id,
-            img: item.asset,
-            vimg: item.vasset,
-            symbol: market.underlyingSymbol || '',
-            decimals: item.decimals,
-            tokenAddress: market.underlyingAddress,
-            vsymbol: market.symbol,
-            vtokenAddress,
-            supplyApy: new BigNumber(market.supplyApy || 0),
-            borrowApy: new BigNumber(market.borrowApy || 0),
-            xvsSupplyApy: new BigNumber(market.supplyVenusApy || 0),
-            xvsBorrowApy: new BigNumber(market.borrowVenusApy || 0),
-            collateralFactor: new BigNumber(market.collateralFactor || 0).div(1e18),
-            tokenPrice: new BigNumber(market.tokenPrice || 0),
-            liquidity: new BigNumber(market.liquidity || 0),
-            borrowCaps: new BigNumber(market.borrowCaps || 0),
-            totalBorrows: new BigNumber(market.totalBorrows2 || 0),
-            treasuryBalance,
-            walletBalance,
-            supplyBalance,
-            borrowBalance,
-            isEnabled,
-            collateral,
-            percentOfLimit,
-            hypotheticalLiquidity: ['0', '0', '0'] as [string, string, string],
-            borrowerPBFnr:
-              new BigNumber(market.borrowerPBFnr).div(new BigNumber(10).pow(18)) ||
-              new BigNumber(0),
-            supplierPBFnr:
-              new BigNumber(market.supplierPBFnr).div(new BigNumber(10).pow(18)) ||
-              new BigNumber(0),
-            borrowerPBFnrPerYear:
-              new BigNumber(market.borrowerPBFnrPerYear) ||
-              new BigNumber(0),
-            supplierPBFnrPerYear:
-              new BigNumber(market.supplierPBFnrPerYear) ||
-              new BigNumber(0),
+            ...asset,
+            hypotheticalLiquidity,
           };
-        });
+        }),
+      );
 
-        let assetList = assetAndNullList.filter(notNull);
+      const totalBorrowBalance = assetList
+        .reduce((acc, asset) => {
+          const borrowBalanceUSD = asset.borrowBalance.times(asset.tokenPrice);
+          return acc.plus(borrowBalanceUSD);
+        }, new BigNumber(0))
+        .plus(userVaiMinted);
 
-        // We use "hypothetical liquidity upon exiting a market" to disable the "exit market"
-        // toggle. Sadly, the current VenusLens contract does not provide this info, so we
-        // still have to query each market.
-        assetList = await Promise.all(
-          assetList.map(async asset => {
-            const hypotheticalLiquidity: [string, string, string] = (
-              account
-                ? await comptrollerContract.methods
-                    .getHypotheticalAccountLiquidity(
-                      account,
-                      asset.vtokenAddress,
-                      // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-                      balances[asset.vtokenAddress.toLowerCase()].balanceOf,
-                      0,
-                    )
-                    .call()
-                : ['0', '0', '0']
-            ) as [string, string, string];
-
-            return {
-              ...asset,
-              hypotheticalLiquidity,
-            };
-          }),
-        );
-
-        const totalBorrowBalance = assetList
-          .reduce((acc, asset) => {
-            const borrowBalanceUSD = asset.borrowBalance.times(asset.tokenPrice);
-            return acc.plus(borrowBalanceUSD);
-          }, new BigNumber(0))
-          .plus(userVaiMinted);
-
-        const totalBorrowLimit = assetList.reduce((acc, asset) => {
-          if (asset.collateral) {
-            const supplyBalanceUSD = asset.supplyBalance.times(asset.tokenPrice);
-            return acc.plus(supplyBalanceUSD.times(asset.collateralFactor));
-          }
-          return acc;
-        }, new BigNumber(0));
-
-        // percent of limit
-        assetList = assetList.map((item: Asset) => ({
-          ...item,
-          percentOfLimit: new BigNumber(totalBorrowLimit).isZero()
-            ? '0'
-            : item.borrowBalance
-                .times(item.tokenPrice)
-                .div(totalBorrowLimit)
-                .times(100)
-                .dp(0, 1)
-                .toString(10),
-        }));
-
-        if (!isMounted) {
-          return;
+      const totalBorrowLimit = assetList.reduce((acc, asset) => {
+        if (asset.collateral) {
+          const supplyBalanceUSD = asset.supplyBalance.times(asset.tokenPrice);
+          return acc.plus(supplyBalanceUSD.times(asset.collateralFactor));
         }
+        return acc;
+      }, new BigNumber(0));
 
-        // Calculate total treasury balance in USD
-        const updatedTreasuryTotalUSDBalance = assetList.reduce((accumulator, asset) => {
-          const treasuryUSDBalance = asset.treasuryBalance.multipliedBy(asset.tokenPrice);
-          return accumulator.plus(treasuryUSDBalance);
-        }, new BigNumber(0));
+      // percent of limit
+      assetList = assetList.map((item: Asset) => ({
+        ...item,
+        percentOfLimit: new BigNumber(totalBorrowLimit).isZero()
+          ? '0'
+          : item.borrowBalance
+              .times(item.tokenPrice)
+              .div(totalBorrowLimit)
+              .times(100)
+              .dp(0, 1)
+              .toString(10),
+      }));
 
-        setTreasuryTotalUSDBalance(updatedTreasuryTotalUSDBalance);
-        setUserMarketInfo(assetList);
-        setUserTotalBorrowLimit(totalBorrowLimit);
-        setUserTotalBorrowBalance(totalBorrowBalance);
-        setUserXvsBalance(new BigNumber(0));
+      if (!isMounted) {
+        return;
+      }
+
+      // Calculate total treasury balance in USD
+      const updatedTreasuryTotalUSDBalance = assetList.reduce((accumulator, asset) => {
+        const treasuryUSDBalance = asset.treasuryBalance.multipliedBy(asset.tokenPrice);
+        return accumulator.plus(treasuryUSDBalance);
+      }, new BigNumber(0));
+
+      setTreasuryTotalUSDBalance(updatedTreasuryTotalUSDBalance);
+      setUserMarketInfo(assetList);
+      setUserTotalBorrowLimit(totalBorrowLimit);
+      setUserTotalBorrowBalance(totalBorrowBalance);
+      setUserXvsBalance(new BigNumber(0));
       // } catch (error) {
-        // console.log('error when get market data', error);
+      // console.log('error when get market data', error);
       // }
     };
     updateMarketUserInfo();

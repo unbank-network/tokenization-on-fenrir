@@ -36,9 +36,9 @@ export const withWeb3Provider: DecoratorFunction = Story => (
 );
 
 export const withMarketContext: DecoratorFunction = Story => (
-  <MarketContextProvider>
-    <Story />
-  </MarketContextProvider>
+  // <MarketContextProvider>
+  <Story />
+  // </MarketContextProvider>
 );
 
 export const withAuthContext = (context: IAuthContextValue) => (Story: StoryType) =>
@@ -49,9 +49,9 @@ export const withAuthContext = (context: IAuthContextValue) => (Story: StoryType
   );
 
 export const withVaiContextProvider: DecoratorFunction = Story => (
-  <VaiContextProvider>
-    <Story />
-  </VaiContextProvider>
+  // <VaiContextProvider>
+  <Story />
+  // </VaiContextProvider>
 );
 
 export const withThemeProvider: DecoratorFunction = Story => (
@@ -65,7 +65,7 @@ export const withThemeProvider: DecoratorFunction = Story => (
   </Theme>
 );
 
-export const withQueryClientProvider: DecoratorFunction = (Story) => {
+export const withQueryClientProvider: DecoratorFunction = Story => {
   const queryClient = new QueryClient();
 
   return (
@@ -75,7 +75,7 @@ export const withQueryClientProvider: DecoratorFunction = (Story) => {
   );
 };
 
-export const withCenterStory: (props: { width: number | string }) => DecoratorFunction = (props) => {
+export const withCenterStory: (props: { width: number | string }) => DecoratorFunction = props => {
   const { width } = props;
   return Story => (
     <Box

@@ -32,27 +32,27 @@ const renderComponent = (children: any) => {
       <Web3Wrapper>
         <QueryClientProvider client={queryClient}>
           <RefreshContextProvider>
-            <VaiContextProvider>
-              <MarketContextProvider>
-                <MuiThemeProvider>
-                  <AuthProvider>
-                    <BrowserRouter>
-                      <ToastContainer
-                        autoClose={8000}
-                        transition={Slide}
-                        hideProgressBar
-                        newestOnTop
-                        position={toast.POSITION.TOP_LEFT}
-                      />
+            {/* <VaiContextProvider> */}
+            {/* <MarketContextProvider> */}
+            <MuiThemeProvider>
+              <AuthProvider>
+                <BrowserRouter>
+                  <ToastContainer
+                    autoClose={8000}
+                    transition={Slide}
+                    hideProgressBar
+                    newestOnTop
+                    position={toast.POSITION.TOP_LEFT}
+                  />
 
-                      <Switch>
-                        <Route path="/" component={() => children} />
-                      </Switch>
-                    </BrowserRouter>
-                  </AuthProvider>
-                </MuiThemeProvider>
-              </MarketContextProvider>
-            </VaiContextProvider>
+                  <Switch>
+                    <Route path="/" component={() => children} />
+                  </Switch>
+                </BrowserRouter>
+              </AuthProvider>
+            </MuiThemeProvider>
+            {/* </MarketContextProvider> */}
+            {/* </VaiContextProvider> */}
           </RefreshContextProvider>
         </QueryClientProvider>
       </Web3Wrapper>

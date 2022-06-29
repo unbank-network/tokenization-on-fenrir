@@ -8,7 +8,7 @@ import { useTranslation } from 'translation';
 import { useIsMdDown } from 'hooks/responsive';
 import { Toolbar } from '../Toolbar';
 // import ClaimXvsRewardButton from '../ClaimXvsRewardButton';
-// import ConnectButton from '../ConnectButton';
+import ConnectButton from '../ConnectButton';
 import { menuItems } from '../constants';
 import { useStyles } from './styles';
 

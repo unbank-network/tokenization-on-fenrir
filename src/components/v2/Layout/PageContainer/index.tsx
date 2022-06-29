@@ -16,7 +16,7 @@ export const PageContainer = ({ children }: IPageContainerProps) => {
         {children}
       </Box>
       <Box component="footer" css={styles.footer}>
-        <Footer />
+        {/* <Footer /> */}
       </Box>
     </>
   );
